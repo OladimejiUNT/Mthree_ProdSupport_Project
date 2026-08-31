@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard — IT Support Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-3">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 fw-bold mb-0">
+            <i class="bi bi-speedometer2 text-primary me-2"></i>Admin Dashboard
+        </h1>
+        <span class="text-muted small">Overview &amp; recent activity</span>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row g-3 mb-4">
+        {% for label, value, icon, color in [
+            ('Open Incidents',    stats.open,       'exclamation-circle', 'danger'),
+            ('In Progress',       stats.in_progress,'arrow-repeat',       'info'),
+            ('Critical',          stats.critical,   'fire',               'danger'),
+            ('Total Incidents',   stats.total,      'clipboard-data',     'secondary'),
+            ('Total Users',       total_users,      'people',             'primary'),
+            ('Active Users',      active_users,     'person-check',       'success')
+        ] %}
+        <div class="col-6 col-lg-2">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center py-3">
+                    <i class="bi bi-{{ icon }} text-{{ color }}" style="font-size:1.8rem;"></i>
+                    <div class="h3 fw-bold mt-1 mb-0">{{ value }}</div>
+                    <div class="text-muted small">{{ label }}</div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="row g-4">
+        <!-- Recent Audit Log -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom py-3 d-flex
+                            justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-semibold">
+                        <i class="bi bi-journal-text me-2"></i>Recent Activity
+                    </h6>
+                    <a href="{{ url_for('admin.audit_log') }}"
+                       class="btn btn-sm btn-outline-secondary">View All</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 small">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Action</th>
+                                <th>Table</th>
+                                <th>Record</th>
+                                <th>By</th>
+                                <th>When</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in recent_audits %}
+                            <tr>
+                                <td>
+                                    <span class="audit-action-{{ entry.action }}">
+                                        {{ entry.action }}
+                                    </span>
+                                </td>
+                                <td class="text-muted">{{ entry.table_name }}</td>
+                                <td>#{{ entry.record_id }}</td>
+                                <td>{{ entry.actor.name if entry.actor else 'System' }}</td>
+                                <td class="text-muted text-nowrap">
+                                    {{ entry.created_at.strftime('%m-%d %H:%M') if entry.created_at else '—' }}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">No activity yet</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h6 class="mb-0 fw-semibold">
+                        <i class="bi bi-lightning me-2"></i>Quick Links
+                    </h6>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{{ url_for('incidents.index') }}"
+                       class="list-group-item list-group-item-action">
+                        <i class="bi bi-list-task me-2 text-primary"></i>All Incidents
+                    </a>
+                    <a href="{{ url_for('incidents.index') }}?status=open"
+                       class="list-group-item list-group-item-action">
+                        <i class="bi bi-exclamation-circle me-2 text-danger"></i>Open Incidents
+                    </a>
+                    <a href="{{ url_for('admin.users') }}"
+                       class="list-group-item list-group-item-action">
+                        <i class="bi bi-people me-2 text-secondary"></i>Manage Users
+                    </a>
+                    <a href="{{ url_for('admin.audit_log') }}"
+                       class="list-group-item list-group-item-action">
+                        <i class="bi bi-journal-text me-2 text-secondary"></i>Full Audit Log
+                    </a>
+                    <a href="/metrics" class="list-group-item list-group-item-action"
+                       target="_blank">
+                        <i class="bi bi-activity me-2 text-info"></i>Prometheus Metrics
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

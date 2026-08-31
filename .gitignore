@@ -1,3 +1,53 @@
+# ===== IT Support Portal =====
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+build/
+dist/
+*.egg
+*.egg-info/
+
+# Virtual environments
+env/
+venv/
+.venv/
+ENV/
+
+# Environment variables (never commit secrets)
+.env
+.flaskenv
+
+# Database files
+instance/
+*.db
+*.sqlite
+*.sqlite3
+
+# Testing / Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Monitoring data volumes
+monitoring/grafana/data/
+monitoring/prometheus/data/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

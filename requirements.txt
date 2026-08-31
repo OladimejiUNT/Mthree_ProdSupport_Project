@@ -1,0 +1,37 @@
+# Core Framework
+Flask==3.0.3
+Werkzeug==3.0.3
+
+# Authentication
+Flask-Login==0.6.3
+Authlib==1.3.1
+requests==2.32.3
+
+# Database
+Flask-SQLAlchemy==3.1.1
+Flask-Migrate==4.0.7
+PyMySQL==1.1.1
+cryptography==42.0.8
+
+# Forms & Validation
+Flask-WTF==1.2.1
+WTForms==3.1.2
+email-validator==2.2.0
+
+# Environment
+python-dotenv==1.0.1
+
+# Monitoring
+prometheus-flask-exporter==0.23.1
+prometheus-client==0.20.0
+
+# Testing
+pytest==8.2.2
+pytest-flask==1.3.0
+coverage==7.5.4
+
+# Production server
+gunicorn==22.0.0
+
+# CLI
+click==8.1.7

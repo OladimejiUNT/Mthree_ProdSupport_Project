@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block title %}Audit Log — Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-3">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 fw-bold mb-0">
+            <i class="bi bi-journal-text text-primary me-2"></i>Audit Log
+        </h1>
+        <span class="text-muted small">All CREATE / UPDATE / DELETE events</span>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 small">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Action</th>
+                        <th>Table</th>
+                        <th>Record ID</th>
+                        <th>Actor</th>
+                        <th>IP</th>
+                        <th>Timestamp</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in logs.items %}
+                    <tr>
+                        <td class="text-muted">{{ entry.id }}</td>
+                        <td>
+                            <span class="audit-action-{{ entry.action }} fw-bold">
+                                {{ entry.action }}
+                            </span>
+                        </td>
+                        <td class="text-muted">{{ entry.table_name }}</td>
+                        <td>
+                            {% if entry.table_name == 'incidents' %}
+                            <a href="{{ url_for('incidents.detail', incident_id=entry.record_id) }}"
+                               class="text-decoration-none">#{{ entry.record_id }}</a>
+                            {% else %}
+                            #{{ entry.record_id }}
+                            {% endif %}
+                        </td>
+                        <td>{{ entry.actor.name if entry.actor else 'System' }}</td>
+                        <td class="text-muted">{{ entry.ip_address or '—' }}</td>
+                        <td class="text-muted text-nowrap">
+                            {{ entry.created_at.strftime('%Y-%m-%d %H:%M:%S') if entry.created_at else '—' }}
+                        </td>
+                        <td>
+                            {% if entry.old_values or entry.new_values %}
+                            <button class="btn btn-sm btn-outline-secondary"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#audit-{{ entry.id }}">
+                                <i class="bi bi-code-slash"></i>
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% if entry.old_values or entry.new_values %}
+                    <tr class="collapse" id="audit-{{ entry.id }}">
+                        <td colspan="8" class="bg-light">
+                            <div class="row g-2 p-2">
+                                {% if entry.old_values %}
+                                <div class="col-md-6">
+                                    <strong class="text-danger small">Before</strong>
+                                    <pre class="small mt-1 mb-0" style="max-height:200px;overflow:auto;">{{ entry.old_values | tojson(indent=2) }}</pre>
+                                </div>
+                                {% endif %}
+                                {% if entry.new_values %}
+                                <div class="col-md-6">
+                                    <strong class="text-success small">After</strong>
+                                    <pre class="small mt-1 mb-0" style="max-height:200px;overflow:auto;">{{ entry.new_values | tojson(indent=2) }}</pre>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">No audit entries found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if logs.pages > 1 %}
+        <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
+            <small class="text-muted">
+                Page {{ logs.page }} of {{ logs.pages }}
+                ({{ logs.total }} entries)
+            </small>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item {{ 'disabled' if not logs.has_prev }}">
+                        <a class="page-link"
+                           href="{{ url_for('admin.audit_log', page=logs.prev_num) if logs.has_prev else '#' }}">
+                            &laquo;
+                        </a>
+                    </li>
+                    {% for p in logs.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                        {% if p %}
+                        <li class="page-item {{ 'active' if p == logs.page }}">
+                            <a class="page-link"
+                               href="{{ url_for('admin.audit_log', page=p) }}">{{ p }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled"><span class="page-link">…</span></li>
+                        {% endif %}
+                    {% endfor %}
+                    <li class="page-item {{ 'disabled' if not logs.has_next }}">
+                        <a class="page-link"
+                           href="{{ url_for('admin.audit_log', page=logs.next_num) if logs.has_next else '#' }}">
+                            &raquo;
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
