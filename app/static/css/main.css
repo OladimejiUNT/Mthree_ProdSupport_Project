@@ -1,46 +1,94 @@
 /* ===== Custom Properties ===== */
 :root {
   --severity-critical: #dc3545;
-  --severity-high:     #fd7e14;
-  --severity-medium:   #ffc107;
-  --severity-low:      #0d6efd;
-  --status-open:       #dc3545;
-  --status-in-progress:#0dcaf0;
-  --status-resolved:   #198754;
-  --status-closed:     #6c757d;
+  --severity-high: #fd7e14;
+  --severity-medium: #ffc107;
+  --severity-low: #0d6efd;
+  --status-open: #dc3545;
+  --status-in-progress: #0dcaf0;
+  --status-resolved: #198754;
+  --status-closed: #6c757d;
 }
 
 /* ===== Severity Badges ===== */
-.badge-severity-critical { background-color: var(--severity-critical) !important; color: #fff !important; }
-.badge-severity-high     { background-color: var(--severity-high)     !important; color: #fff !important; }
-.badge-severity-medium   { background-color: var(--severity-medium)   !important; color: #212529 !important; }
-.badge-severity-low      { background-color: var(--severity-low)      !important; color: #fff !important; }
+.badge-severity-critical {
+  background-color: var(--severity-critical) !important;
+  color: #fff !important;
+}
+.badge-severity-high {
+  background-color: var(--severity-high) !important;
+  color: #fff !important;
+}
+.badge-severity-medium {
+  background-color: var(--severity-medium) !important;
+  color: #212529 !important;
+}
+.badge-severity-low {
+  background-color: var(--severity-low) !important;
+  color: #fff !important;
+}
 
 /* ===== Status Badges ===== */
-.badge-status-open        { background-color: var(--status-open)        !important; color: #fff !important; }
-.badge-status-in_progress { background-color: var(--status-in-progress) !important; color: #212529 !important; }
-.badge-status-resolved    { background-color: var(--status-resolved)    !important; color: #fff !important; }
-.badge-status-closed      { background-color: var(--status-closed)      !important; color: #fff !important; }
+.badge-status-open {
+  background-color: var(--status-open) !important;
+  color: #fff !important;
+}
+.badge-status-in_progress {
+  background-color: var(--status-in-progress) !important;
+  color: #212529 !important;
+}
+.badge-status-resolved {
+  background-color: var(--status-resolved) !important;
+  color: #fff !important;
+}
+.badge-status-closed {
+  background-color: var(--status-closed) !important;
+  color: #fff !important;
+}
 
 /* ===== Stat Cards ===== */
-.stat-card { border-left: 4px solid; }
-.stat-card-danger    { border-left-color: var(--severity-critical); }
-.stat-card-info      { border-left-color: var(--status-in-progress); }
-.stat-card-success   { border-left-color: var(--status-resolved); }
-.stat-card-secondary { border-left-color: #adb5bd; }
-.stat-card-primary   { border-left-color: #0d6efd; }
+.stat-card {
+  border-left: 4px solid;
+}
+.stat-card-danger {
+  border-left-color: var(--severity-critical);
+}
+.stat-card-info {
+  border-left-color: var(--status-in-progress);
+}
+.stat-card-success {
+  border-left-color: var(--status-resolved);
+}
+.stat-card-secondary {
+  border-left-color: #adb5bd;
+}
+.stat-card-primary {
+  border-left-color: #0d6efd;
+}
 
 /* ===== Incidents Table ===== */
-.incident-row { cursor: pointer; }
-.incident-row:hover { background-color: rgba(13,110,253,.04); }
+.incident-row {
+  cursor: pointer;
+}
+.incident-row:hover {
+  background-color: rgba(13, 110, 253, 0.04);
+}
 
 /* ===== Comments ===== */
-.comment-card { border-left: 3px solid #0d6efd !important; }
+.comment-card {
+  border-left: 3px solid #0d6efd !important;
+}
 
 /* ===== Audit Log ===== */
-.audit-action-CREATE { color: #198754; }
-.audit-action-UPDATE { color: #0d6efd; }
-.audit-action-DELETE { color: #dc3545; }
+.audit-action-CREATE {
+  color: #198754;
+}
+.audit-action-UPDATE {
+  color: #0d6efd;
+}
+.audit-action-DELETE {
+  color: #dc3545;
+}
 
 /* ===== Auth Pages ===== */
 .auth-wrapper {
@@ -67,7 +115,7 @@
   position: relative;
 }
 .divider::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 0;
@@ -81,7 +129,9 @@
 }
 
 /* ===== Footer ===== */
-.footer { font-size: 0.82rem; }
+.footer {
+  font-size: 0.82rem;
+}
 
 /* ===== Navbar active link ===== */
 .navbar-dark .navbar-nav .nav-link.active {

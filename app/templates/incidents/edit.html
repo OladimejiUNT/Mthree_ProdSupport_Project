@@ -1,92 +1,93 @@
-{% extends 'base.html' %}
-
-{% block title %}Edit Incident #{{ incident.id }} — IT Support Portal{% endblock %}
-
-{% block content %}
+{% extends 'base.html' %} {% block title %}Edit Incident #{{ incident.id }} — IT
+Support Portal{% endblock %} {% block content %}
 <div class="container-fluid px-4 py-3">
-    <nav aria-label="breadcrumb" class="mb-3">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-                <a href="{{ url_for('incidents.index') }}">Incidents</a>
-            </li>
-            <li class="breadcrumb-item">
-                <a href="{{ url_for('incidents.detail', incident_id=incident.id) }}">
-                    Incident #{{ incident.id }}
-                </a>
-            </li>
-            <li class="breadcrumb-item active">Edit</li>
-        </ol>
-    </nav>
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('incidents.index') }}">Incidents</a>
+      </li>
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('incidents.detail', incident_id=incident.id) }}">
+          Incident #{{ incident.id }}
+        </a>
+      </li>
+      <li class="breadcrumb-item active">Edit</li>
+    </ol>
+  </nav>
 
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-bottom py-3 d-flex align-items-center gap-2">
-                    <h5 class="mb-0 fw-bold">
-                        <i class="bi bi-pencil text-secondary me-2"></i>
-                        Edit Incident #{{ incident.id }}
-                    </h5>
-                    <span class="badge badge-status-{{ incident.status }}">
-                        {{ incident.status|replace('_',' ')|title }}
-                    </span>
-                </div>
-                <div class="card-body p-4">
-                    <form method="POST" novalidate>
-                        {{ form.hidden_tag() }}
-
-                        <div class="mb-3">
-                            {{ form.title.label(class='form-label fw-semibold') }}
-                            {{ form.title(
-                                class='form-control' + (' is-invalid' if form.title.errors else '')
-                            ) }}
-                            {% for e in form.title.errors %}
-                            <div class="invalid-feedback">{{ e }}</div>
-                            {% endfor %}
-                        </div>
-
-                        <div class="mb-3">
-                            {{ form.description.label(class='form-label fw-semibold') }}
-                            {{ form.description(class='form-control', rows=5) }}
-                        </div>
-
-                        <div class="row g-3 mb-3">
-                            <div class="col-md-6">
-                                {{ form.category_id.label(class='form-label fw-semibold') }}
-                                {{ form.category_id(class='form-select') }}
-                            </div>
-                            <div class="col-md-6">
-                                {{ form.severity.label(class='form-label fw-semibold') }}
-                                {{ form.severity(class='form-select') }}
-                            </div>
-                        </div>
-
-                        {% if current_user.is_admin %}
-                        <div class="card bg-light border-0 p-3 mb-3">
-                            <p class="small fw-semibold text-muted mb-2">
-                                <i class="bi bi-shield-lock me-1"></i>Admin Controls
-                            </p>
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    {{ form.status.label(class='form-label fw-semibold small') }}
-                                    {{ form.status(class='form-select form-select-sm') }}
-                                </div>
-                                <div class="col-md-6">
-                                    {{ form.assigned_to.label(class='form-label fw-semibold small') }}
-                                    {{ form.assigned_to(class='form-select form-select-sm') }}
-                                </div>
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        <div class="d-flex gap-2 mt-4">
-                            {{ form.submit(class='btn btn-primary px-4') }}
-                            <a href="{{ url_for('incidents.detail', incident_id=incident.id) }}"
-                               class="btn btn-outline-secondary">Cancel</a>
-                        </div>
-                    </form>
-                </div>
-            </div>
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm">
+        <div
+          class="card-header bg-white border-bottom py-3 d-flex align-items-center gap-2"
+        >
+          <h5 class="mb-0 fw-bold">
+            <i class="bi bi-pencil text-secondary me-2"></i>
+            Edit Incident #{{ incident.id }}
+          </h5>
+          <span class="badge badge-status-{{ incident.status }}">
+            {{ incident.status|replace('_',' ')|title }}
+          </span>
         </div>
+        <div class="card-body p-4">
+          <form method="POST" novalidate>
+            {{ form.hidden_tag() }}
+
+            <div class="mb-3">
+              {{ form.title.label(class='form-label fw-semibold') }} {{
+              form.title( class='form-control' + (' is-invalid' if
+              form.title.errors else '') ) }} {% for e in form.title.errors %}
+              <div class="invalid-feedback">{{ e }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="mb-3">
+              {{ form.description.label(class='form-label fw-semibold') }} {{
+              form.description(class='form-control', rows=5) }}
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                {{ form.category_id.label(class='form-label fw-semibold') }} {{
+                form.category_id(class='form-select') }}
+              </div>
+              <div class="col-md-6">
+                {{ form.severity.label(class='form-label fw-semibold') }} {{
+                form.severity(class='form-select') }}
+              </div>
+            </div>
+
+            {% if current_user.is_admin %}
+            <div class="card bg-light border-0 p-3 mb-3">
+              <p class="small fw-semibold text-muted mb-2">
+                <i class="bi bi-shield-lock me-1"></i>Admin Controls
+              </p>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  {{ form.status.label(class='form-label fw-semibold small') }}
+                  {{ form.status(class='form-select form-select-sm') }}
+                </div>
+                <div class="col-md-6">
+                  {{ form.assigned_to.label(class='form-label fw-semibold
+                  small') }} {{ form.assigned_to(class='form-select
+                  form-select-sm') }}
+                </div>
+              </div>
+            </div>
+            {% endif %}
+
+            <div class="d-flex gap-2 mt-4">
+              {{ form.submit(class='btn btn-primary px-4') }}
+              <a
+                href="{{ url_for('incidents.detail', incident_id=incident.id) }}"
+                class="btn btn-outline-secondary"
+                >Cancel</a
+              >
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
+  </div>
 </div>
 {% endblock %}
