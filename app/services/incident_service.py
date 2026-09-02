@@ -4,6 +4,7 @@ from app.extensions import db
 from app.models.incident import Incident
 from app.models.incident_comment import IncidentComment
 from app.services import audit_service
+from app.services import notification_service
 
 
 def get_all_incidents(filters: dict = None) -> list:
@@ -52,6 +53,22 @@ def create_incident(data: dict, current_user, ip_address: str = None) -> Inciden
     )
 
     db.session.commit()
+
+    # Send an out-of-band alert for very severe incidents.
+    alert_severity = (data.get('severity') or 'medium').lower()
+    configured_severity = 'critical'
+    try:
+        from flask import current_app
+        configured_severity = str(current_app.config.get('INCIDENT_ALERT_SEVERITY', 'critical')).lower()
+    except Exception:
+        configured_severity = 'critical'
+
+    if alert_severity == configured_severity:
+        notification_service.send_critical_incident_email(
+            incident=incident,
+            reporter_name=getattr(current_user, 'name', 'Unknown Reporter'),
+        )
+
     return incident
 
 

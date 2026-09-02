@@ -19,6 +19,17 @@ class Config:
     SESSION_COOKIE_SAMESITE = 'Lax'
     REMEMBER_COOKIE_HTTPONLY = True
 
+    # Critical incident email alert settings
+    EMAIL_ALERTS_ENABLED = os.environ.get('EMAIL_ALERTS_ENABLED', '1').lower() in ('1', 'true', 'yes', 'on')
+    INCIDENT_ALERT_SEVERITY = os.environ.get('INCIDENT_ALERT_SEVERITY', 'critical').lower()
+    INCIDENT_ALERT_EMAIL_TO = os.environ.get('INCIDENT_ALERT_EMAIL_TO', 'allayedicko4@gmail.com')
+    SMTP_SERVER = os.environ.get('SMTP_SERVER', '')
+    SMTP_PORT = int(os.environ.get('SMTP_PORT', '587'))
+    SMTP_USE_TLS = os.environ.get('SMTP_USE_TLS', '1').lower() in ('1', 'true', 'yes', 'on')
+    SMTP_USERNAME = os.environ.get('SMTP_USERNAME', '')
+    SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD', '')
+    SMTP_FROM_EMAIL = os.environ.get('SMTP_FROM_EMAIL', SMTP_USERNAME or 'noreply@itsupport.local')
+
 
 class DevelopmentConfig(Config):
     DEBUG = True
@@ -28,6 +39,7 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config):
     TESTING = True
+    EMAIL_ALERTS_ENABLED = False
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     WTF_CSRF_ENABLED = False
     SESSION_COOKIE_SECURE = False
