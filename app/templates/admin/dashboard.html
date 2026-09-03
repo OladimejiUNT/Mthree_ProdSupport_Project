@@ -89,6 +89,32 @@ endblock %} {% block content %}
 
     <!-- Quick Links -->
     <div class="col-lg-4">
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+          <h6 class="mb-0 fw-semibold">
+            <i class="bi bi-envelope-check me-2"></i>Email Alerts
+          </h6>
+          <span class="badge text-bg-{{ 'success' if not email_status.missing and email_status.enabled else 'warning' }}">
+            {{ email_status.transport|upper }}
+          </span>
+        </div>
+        <div class="card-body">
+          <div class="small text-muted mb-3">
+            Trigger: {{ email_status.trigger_severity }} incidents
+          </div>
+          <ul class="list-unstyled small mb-3">
+            <li>Enabled: {{ 'Yes' if email_status.enabled else 'No' }}</li>
+            <li>Recipient configured: {{ 'Yes' if email_status.recipient_configured else 'No' }}</li>
+            <li>Missing settings: {{ email_status.missing|join(', ') if email_status.missing else 'None' }}</li>
+          </ul>
+          <form method="post" action="{{ url_for('admin.send_test_email') }}">
+            <button type="submit" class="btn btn-sm btn-primary">
+              <i class="bi bi-send me-1"></i>Send Test Email
+            </button>
+          </form>
+        </div>
+      </div>
+
       <div class="card border-0 shadow-sm">
         <div class="card-header bg-white border-bottom py-3">
           <h6 class="mb-0 fw-semibold">

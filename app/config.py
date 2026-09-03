@@ -29,6 +29,10 @@ class Config:
     SMTP_USERNAME = os.environ.get('SMTP_USERNAME', '')
     SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD', '')
     SMTP_FROM_EMAIL = os.environ.get('SMTP_FROM_EMAIL', SMTP_USERNAME or 'noreply@itsupport.local')
+    EMAIL_TRANSPORT = os.environ.get('EMAIL_TRANSPORT', 'auto').lower()
+    RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
+    RESEND_FROM_EMAIL = os.environ.get('RESEND_FROM_EMAIL', SMTP_FROM_EMAIL)
+    RESEND_API_BASE = os.environ.get('RESEND_API_BASE', 'https://api.resend.com')
 
 
 class DevelopmentConfig(Config):

@@ -7,7 +7,7 @@ from flask_login import current_user, login_required
 from app.extensions import db
 from app.models.audit_log import AuditLog
 from app.models.user import User
-from app.services import incident_service
+from app.services import incident_service, notification_service
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -30,11 +30,25 @@ def dashboard():
     recent_audits = AuditLog.query.order_by(AuditLog.created_at.desc()).limit(10).all()
     total_users = User.query.count()
     active_users = User.query.filter_by(is_active=True).count()
+    email_status = notification_service.get_email_alert_config_status()
     return render_template('admin/dashboard.html',
                            stats=stats,
                            recent_audits=recent_audits,
                            total_users=total_users,
-                           active_users=active_users)
+                           active_users=active_users,
+                           email_status=email_status)
+
+
+@admin_bp.route('/send-test-email', methods=['POST'])
+@login_required
+@admin_required
+def send_test_email():
+    sent = notification_service.send_deployment_smoke_test_email()
+    if sent:
+        flash('Test email sent successfully.', 'success')
+    else:
+        flash('Test email failed. Check the email configuration card and application logs.', 'danger')
+    return redirect(url_for('admin.dashboard'))
 
 
 @admin_bp.route('/users')
