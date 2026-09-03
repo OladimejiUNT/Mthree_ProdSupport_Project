@@ -4,6 +4,7 @@ import click
 from flask import Flask, render_template
 from app.config import config
 from app.extensions import db, login_manager, migrate, csrf, oauth
+from app.services import notification_service
 
 
 def create_app(config_name=None):
@@ -27,6 +28,8 @@ def create_app(config_name=None):
     if not app.config.get('TESTING'):
         from prometheus_flask_exporter import PrometheusMetrics
         PrometheusMetrics(app, group_by='endpoint')
+        with app.app_context():
+            notification_service.log_email_alert_configuration()
 
     # --- Google OAuth provider ---
     if app.config.get('GOOGLE_CLIENT_ID'):
@@ -94,6 +97,24 @@ def _register_commands(app):
         db.session.add(user)
         db.session.commit()
         click.echo(f'Admin user {email} created.')
+
+    @app.cli.command('send-test-email')
+    @click.option('--to', 'recipient', default=None, help='Optional override recipient email address.')
+    def send_test_email(recipient):
+        """Send a deployment smoke-test email using configured SMTP settings."""
+        status = notification_service.get_email_alert_config_status()
+        if status['missing']:
+            click.echo(
+                'Email configuration is incomplete. Missing: ' + ', '.join(status['missing'])
+            )
+            raise SystemExit(1)
+
+        sent = notification_service.send_deployment_smoke_test_email(recipient=recipient)
+        if not sent:
+            click.echo('Smoke-test email failed. Check SMTP credentials and application logs.')
+            raise SystemExit(1)
+
+        click.echo('Smoke-test email sent successfully.')
 
 
 def _seed_default_categories():
