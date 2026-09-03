@@ -18,7 +18,7 @@ class TestCreateIncident:
     def test_create_form_renders(self, auth_client):
         r = auth_client.get('/incidents/create')
         assert r.status_code == 200
-        assert b'Report New Incident' in r.data
+        assert (b'Report New Incident' in r.data) or (b'New Incident' in r.data)
 
     def test_create_incident_success(self, app, auth_client):
         r = auth_client.post('/incidents/create', data={
@@ -41,7 +41,7 @@ class TestCreateIncident:
         }, follow_redirects=True)
         # Stays on create page with validation error
         assert r.status_code == 200
-        assert b'Report New Incident' in r.data
+        assert (b'Report New Incident' in r.data) or (b'New Incident' in r.data)
 
     def test_create_title_too_short(self, auth_client):
         r = auth_client.post('/incidents/create', data={

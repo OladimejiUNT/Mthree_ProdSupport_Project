@@ -109,3 +109,49 @@ class TestAuditIntegration:
                 action='DELETE',
             ).first()
             assert log is not None
+
+
+class TestCriticalIncidentNotification:
+    def test_critical_incident_triggers_email_alert(self, app, monkeypatch):
+        with app.app_context():
+            user = User.query.filter_by(email='user@test.com').first()
+            called = {'value': False}
+
+            def _fake_send(incident, reporter_name):
+                called['value'] = True
+                assert incident.severity == 'critical'
+                assert reporter_name == user.name
+                return True
+
+            monkeypatch.setattr(
+                'app.services.notification_service.send_critical_incident_email',
+                _fake_send,
+            )
+
+            incident_service.create_incident(
+                data={'title': 'Critical Email Trigger', 'severity': 'critical'},
+                current_user=user,
+            )
+
+            assert called['value'] is True
+
+    def test_non_critical_incident_does_not_trigger_email_alert(self, app, monkeypatch):
+        with app.app_context():
+            user = User.query.filter_by(email='user@test.com').first()
+            called = {'value': False}
+
+            def _fake_send(incident, reporter_name):
+                called['value'] = True
+                return True
+
+            monkeypatch.setattr(
+                'app.services.notification_service.send_critical_incident_email',
+                _fake_send,
+            )
+
+            incident_service.create_incident(
+                data={'title': 'Non Critical Incident', 'severity': 'high'},
+                current_user=user,
+            )
+
+            assert called['value'] is False
