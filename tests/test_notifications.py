@@ -24,11 +24,34 @@ class TestNotificationConfig:
             assert 'SMTP_PASSWORD' in status['missing']
             assert 'SMTP_FROM_EMAIL' in status['missing']
 
+    def test_config_status_prefers_sendgrid_in_auto_mode(self, app):
+        with app.app_context():
+            app.config['EMAIL_ALERTS_ENABLED'] = True
+            app.config['EMAIL_TRANSPORT'] = 'auto'
+            app.config['INCIDENT_ALERT_EMAIL_TO'] = 'alerts@example.com'
+            app.config['SENDGRID_API_KEY'] = 'sendgrid-key'
+            app.config['SENDGRID_FROM_EMAIL'] = 'verified@example.com'
+            app.config['RESEND_API_KEY'] = ''
+            app.config['RESEND_FROM_EMAIL'] = ''
+            app.config['SMTP_SERVER'] = ''
+            app.config['SMTP_USERNAME'] = ''
+            app.config['SMTP_PASSWORD'] = ''
+            app.config['SMTP_FROM_EMAIL'] = ''
+
+            status = notification_service.get_email_alert_config_status()
+
+            assert status['transport'] == 'sendgrid'
+            assert status['sendgrid_api_key_configured'] is True
+            assert status['sendgrid_from_configured'] is True
+            assert status['missing'] == []
+
     def test_config_status_prefers_resend_in_auto_mode(self, app):
         with app.app_context():
             app.config['EMAIL_ALERTS_ENABLED'] = True
             app.config['EMAIL_TRANSPORT'] = 'auto'
             app.config['INCIDENT_ALERT_EMAIL_TO'] = 'alerts@example.com'
+            app.config['SENDGRID_API_KEY'] = ''
+            app.config['SENDGRID_FROM_EMAIL'] = ''
             app.config['RESEND_API_KEY'] = 'resend-key'
             app.config['RESEND_FROM_EMAIL'] = 'alerts@example.com'
             app.config['SMTP_SERVER'] = ''
@@ -74,6 +97,34 @@ class TestNotificationCLI:
 
 
 class TestNotificationTransports:
+    def test_send_email_uses_sendgrid_transport(self, app, monkeypatch):
+        with app.app_context():
+            app.config['EMAIL_ALERTS_ENABLED'] = True
+            app.config['EMAIL_TRANSPORT'] = 'sendgrid'
+            app.config['INCIDENT_ALERT_EMAIL_TO'] = 'alerts@example.com'
+            app.config['SENDGRID_API_KEY'] = 'sendgrid-key'
+            app.config['SENDGRID_FROM_EMAIL'] = 'verified@example.com'
+
+            called = {'value': False}
+
+            class _Response:
+                def raise_for_status(self):
+                    return None
+
+            def _fake_post(url, headers, json, timeout):
+                called['value'] = True
+                assert url.endswith('/v3/mail/send')
+                assert json['personalizations'][0]['to'][0]['email'] == 'alerts@example.com'
+                assert json['from']['email'] == 'verified@example.com'
+                return _Response()
+
+            monkeypatch.setattr('app.services.notification_service.requests.post', _fake_post)
+
+            sent = notification_service.send_deployment_smoke_test_email()
+
+            assert sent is True
+            assert called['value'] is True
+
     def test_send_email_uses_resend_transport(self, app, monkeypatch):
         with app.app_context():
             app.config['EMAIL_ALERTS_ENABLED'] = True

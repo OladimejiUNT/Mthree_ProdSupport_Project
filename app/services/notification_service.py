@@ -10,6 +10,8 @@ def _resolve_transport() -> str:
     """Resolve the configured email transport."""
     cfg = current_app.config
     configured = str(cfg.get('EMAIL_TRANSPORT', 'auto')).lower()
+    sendgrid_key = (cfg.get('SENDGRID_API_KEY') or '').strip()
+    sendgrid_from = (cfg.get('SENDGRID_FROM_EMAIL') or '').strip()
     resend_key = (cfg.get('RESEND_API_KEY') or '').strip()
     resend_from = (cfg.get('RESEND_FROM_EMAIL') or '').strip()
     smtp_server = (cfg.get('SMTP_SERVER') or '').strip()
@@ -19,6 +21,8 @@ def _resolve_transport() -> str:
 
     if configured != 'auto':
         return configured
+    if sendgrid_key and sendgrid_from:
+        return 'sendgrid'
     if resend_key and resend_from:
         return 'resend'
     if smtp_server and smtp_username and smtp_password and smtp_from:
@@ -35,11 +39,18 @@ def get_email_alert_config_status() -> dict:
     smtp_username = (cfg.get('SMTP_USERNAME') or '').strip()
     smtp_password = cfg.get('SMTP_PASSWORD') or ''
     from_email = (cfg.get('SMTP_FROM_EMAIL') or '').strip()
+    sendgrid_api_key = (cfg.get('SENDGRID_API_KEY') or '').strip()
+    sendgrid_from_email = (cfg.get('SENDGRID_FROM_EMAIL') or '').strip()
     resend_api_key = (cfg.get('RESEND_API_KEY') or '').strip()
     resend_from_email = (cfg.get('RESEND_FROM_EMAIL') or '').strip()
 
     required = {'INCIDENT_ALERT_EMAIL_TO': recipient}
-    if transport == 'resend':
+    if transport == 'sendgrid':
+        required.update({
+            'SENDGRID_API_KEY': sendgrid_api_key,
+            'SENDGRID_FROM_EMAIL': sendgrid_from_email,
+        })
+    elif transport == 'resend':
         required.update({
             'RESEND_API_KEY': resend_api_key,
             'RESEND_FROM_EMAIL': resend_from_email,
@@ -53,6 +64,8 @@ def get_email_alert_config_status() -> dict:
         })
     else:
         required.update({
+            'SENDGRID_API_KEY': sendgrid_api_key,
+            'SENDGRID_FROM_EMAIL': sendgrid_from_email,
             'RESEND_API_KEY': resend_api_key,
             'RESEND_FROM_EMAIL': resend_from_email,
             'SMTP_SERVER': smtp_server,
@@ -72,6 +85,8 @@ def get_email_alert_config_status() -> dict:
         'smtp_username_configured': bool(smtp_username),
         'smtp_password_configured': bool(str(smtp_password).strip()),
         'smtp_from_configured': bool(from_email),
+        'sendgrid_api_key_configured': bool(sendgrid_api_key),
+        'sendgrid_from_configured': bool(sendgrid_from_email),
         'resend_api_key_configured': bool(resend_api_key),
         'resend_from_configured': bool(resend_from_email),
         'missing': missing,
@@ -84,7 +99,8 @@ def log_email_alert_configuration() -> None:
     current_app.logger.info(
         'Email alerts status: enabled=%s transport=%s trigger_severity=%s recipient_configured=%s '
         'smtp_server_configured=%s smtp_username_configured=%s smtp_password_configured=%s '
-        'smtp_from_configured=%s resend_api_key_configured=%s resend_from_configured=%s missing=%s',
+        'smtp_from_configured=%s sendgrid_api_key_configured=%s sendgrid_from_configured=%s '
+        'resend_api_key_configured=%s resend_from_configured=%s missing=%s',
         status['enabled'],
         status['transport'],
         status['trigger_severity'],
@@ -93,10 +109,47 @@ def log_email_alert_configuration() -> None:
         status['smtp_username_configured'],
         status['smtp_password_configured'],
         status['smtp_from_configured'],
+        status['sendgrid_api_key_configured'],
+        status['sendgrid_from_configured'],
         status['resend_api_key_configured'],
         status['resend_from_configured'],
         ','.join(status['missing']) or 'none',
     )
+
+
+def _send_via_sendgrid(subject: str, body: str, recipient: str) -> bool:
+    """Send an email via the SendGrid HTTP API."""
+    cfg = current_app.config
+    api_key = (cfg.get('SENDGRID_API_KEY') or '').strip()
+    from_email = (cfg.get('SENDGRID_FROM_EMAIL') or '').strip()
+    api_base = str(cfg.get('SENDGRID_API_BASE', 'https://api.sendgrid.com')).rstrip('/')
+
+    if not api_key or not from_email or not recipient:
+        current_app.logger.warning(
+            'Critical incident email not sent: missing SendGrid configuration.'
+        )
+        return False
+
+    try:
+        response = requests.post(
+            f'{api_base}/v3/mail/send',
+            headers={
+                'Authorization': f'Bearer {api_key}',
+                'Content-Type': 'application/json',
+            },
+            json={
+                'personalizations': [{'to': [{'email': recipient}]}],
+                'from': {'email': from_email},
+                'subject': subject,
+                'content': [{'type': 'text/plain', 'value': body}],
+            },
+            timeout=15,
+        )
+        response.raise_for_status()
+        return True
+    except requests.RequestException:
+        current_app.logger.exception('Failed to send critical incident email alert via SendGrid.')
+        return False
 
 
 def _send_via_resend(subject: str, body: str, recipient: str) -> bool:
@@ -179,6 +232,8 @@ def _send_email(subject: str, body: str, recipient: str = None) -> bool:
     recipient = (recipient or cfg.get('INCIDENT_ALERT_EMAIL_TO') or '').strip()
     transport = _resolve_transport()
 
+    if transport == 'sendgrid':
+        return _send_via_sendgrid(subject, body, recipient)
     if transport == 'resend':
         return _send_via_resend(subject, body, recipient)
     if transport == 'smtp':
